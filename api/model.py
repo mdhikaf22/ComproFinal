@@ -4,9 +4,7 @@ MODEL - Face Detection & Classification
 ============================================================
 Sesuai dengan: Model build/Compro_YOLOv8_Training.ipynb
 
-Supports two detection backends:
-- YOLOv8-face (default, faster ~15-30 FPS)
-- MTCNN (slower ~2-3 FPS, more accurate)
+Uses YOLOv8-face for face detection and ViT for classification.
 """
 
 import torch
@@ -20,7 +18,7 @@ import os
 from .config import (
     CLASS_NAMES, ROLE_MAPPING, 
     CONFIDENCE_THRESHOLD, FACE_DETECTION_THRESHOLD,
-    VIT_MODEL_PATH, YOLO_MODEL_PATH, DETECTION_BACKEND,
+    VIT_MODEL_PATH, YOLO_MODEL_PATH,
     ANTISPOOF_ENABLED, ANTISPOOF_THRESHOLD
 )
 from .database import log_access
@@ -28,14 +26,13 @@ from .antispoof import anti_spoof
 
 
 class FaceRecognitionModel:
-    """Face Recognition Model using YOLOv8/MTCNN + ViT"""
+    """Face Recognition Model using YOLOv8 + ViT"""
     
     def __init__(self):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.transform = None
         self.detector = None
         self.model = None
-        self.backend = DETECTION_BACKEND
         self._initialized = False
     
     def initialize(self):
@@ -47,7 +44,6 @@ class FaceRecognitionModel:
         print("      INITIALIZING FACE RECOGNITION MODEL")
         print("=" * 60)
         print(f"[OK] Device: {self.device}")
-        print(f"[OK] Detection Backend: {self.backend.upper()}")
         
         # Transform for ViT
         self.transform = transforms.Compose([
@@ -56,11 +52,8 @@ class FaceRecognitionModel:
             transforms.Normalize([0.5]*3, [0.5]*3)
         ])
         
-        # Initialize detector based on backend
-        if self.backend == 'yolo':
-            self._init_yolo()
-        else:
-            self._init_mtcnn()
+        # Initialize YOLOv8-face detector
+        self._init_yolo()
         
         # ViT Model for classification
         self.model = ViTForImageClassification.from_pretrained(
@@ -106,27 +99,9 @@ class FaceRecognitionModel:
             print(f"[ERROR] YOLOv8 init failed: {e}")
             raise RuntimeError(f"YOLOv8 initialization failed: {e}. Please install ultralytics: pip install ultralytics")
     
-    def _init_mtcnn(self):
-        """Initialize MTCNN face detector"""
-        from facenet_pytorch import MTCNN
-        
-        self.detector = MTCNN(
-            keep_all=True,
-            device=self.device,
-            min_face_size=20,
-            thresholds=[0.5, 0.6, 0.6],
-            factor=0.709,
-            post_process=False
-        )
-        self.backend = 'mtcnn'
-        print("[OK] MTCNN initialized")
-    
     def detect_faces(self, image):
-        """Detect faces using selected backend. Returns list of (x1,y1,x2,y2,conf)"""
-        if self.backend == 'yolo':
-            return self._detect_yolo(image)
-        else:
-            return self._detect_mtcnn(image)
+        """Detect faces using YOLOv8. Returns list of (x1,y1,x2,y2,conf)"""
+        return self._detect_yolo(image)
     
     def _detect_yolo(self, image):
         """Detect faces using YOLOv8"""
@@ -137,7 +112,12 @@ class FaceRecognitionModel:
             img_np = image
         
         # Run detection - use smaller image size for speed
-        results = self.detector.predict(img_np, verbose=False, conf=0.35, imgsz=480)
+        results = self.detector.predict(
+            img_np,
+            verbose=False,
+            conf=FACE_DETECTION_THRESHOLD,
+            imgsz=480,
+        )
         
         faces = []
         img_h, img_w = img_np.shape[:2]
@@ -173,24 +153,6 @@ class FaceRecognitionModel:
                         
                         if face_x2 - face_x1 > 20 and face_y2 - face_y1 > 20:
                             faces.append((face_x1, face_y1, face_x2, face_y2, conf))
-        
-        return faces
-    
-    def _detect_mtcnn(self, image):
-        """Detect faces using MTCNN"""
-        if isinstance(image, np.ndarray):
-            pil_image = Image.fromarray(image)
-        else:
-            pil_image = image
-        
-        boxes, probs = self.detector.detect(pil_image)
-        
-        faces = []
-        if boxes is not None:
-            for box, prob in zip(boxes, probs):
-                if prob is not None and prob >= FACE_DETECTION_THRESHOLD:
-                    x1, y1, x2, y2 = map(int, box)
-                    faces.append((x1, y1, x2, y2, float(prob)))
         
         return faces
     

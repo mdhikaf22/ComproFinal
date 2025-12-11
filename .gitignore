@@ -2,13 +2,10 @@
 # GITIGNORE - Face Recognition Project
 # ============================================================
 
-# Model files (too large for GitHub)
-# Download from: [ADD GOOGLE DRIVE LINK HERE]
+# Model files (tracked with Git LFS)
 *.pth
 *.pt
-vit_mtcnn_model/
 
-# Exception: Allow specific model files (tracked with Git LFS)
 !Model build/best_vit_yolo.pth
 
 # Dataset (too large)

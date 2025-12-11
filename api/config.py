@@ -43,23 +43,11 @@ DATABASE_PATH = os.path.join(BASE_DIR, "access_logs.db")
 VIT_MODEL_PATH = os.path.join(BASE_DIR, "Model build", "best_vit_yolo.pth")  # ViT classifier (YOLOv8 version)
 YOLO_MODEL_PATH = os.path.join(BASE_DIR, "yolov8-face.pt")                    # YOLOv8-face detector
 
-# Fallback ke model lama jika model baru belum ada
-if not os.path.exists(VIT_MODEL_PATH):
-    VIT_MODEL_PATH = os.path.join(BASE_DIR, "best_vit_mtcnn.pth")
-if not os.path.exists(VIT_MODEL_PATH):
-    VIT_MODEL_PATH = os.path.join(BASE_DIR, "Model build", "best_vit_mtcnn.pth")
-
-# Legacy alias
+# Legacy alias (untuk kompatibilitas route lama)
 MODEL_PATH = VIT_MODEL_PATH
 
 SCREENSHOTS_DIR = os.path.join(BASE_DIR, "screenshots")
 CONFIG_PATH = os.path.join(BASE_DIR, "Model build", "model_config.json")
-
-# ============================================================
-# DETECTION BACKEND
-# ============================================================
-# Options: 'yolo' (faster, ~15-30 FPS) or 'mtcnn' (slower, ~2-3 FPS)
-DETECTION_BACKEND = os.environ.get('DETECTION_BACKEND', 'yolo')
 
 # ============================================================
 # ANTI-SPOOFING CONFIG (Silent Face Anti-Spoofing)

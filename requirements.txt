@@ -15,7 +15,6 @@ torchvision>=0.15.0
 # ----------------------------------------------------------
 transformers>=4.30.0
 ultralytics>=8.0.0          # YOLOv8 face detection
-facenet-pytorch>=2.5.0      # MTCNN fallback
 
 # ----------------------------------------------------------
 # Anti-Spoofing (Silent Face Anti-Spoofing)

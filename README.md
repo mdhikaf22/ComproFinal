@@ -27,10 +27,9 @@ python app.py
 Proyek ini adalah sistem pengenalan wajah yang dirancang untuk keperluan akses kontrol (misalnya di depan pintu lab). Sistem dapat mendeteksi wajah dari webcam secara real-time dan mengklasifikasikan apakah orang tersebut **Authorized** atau **Not Authorized**.
 
 ### Fitur Utama
-- **Face Detection**: YOLOv8-face (default) atau MTCNN (fallback)
+- **Face Detection**: YOLOv8-face
 - **Face Classification**: ViT (Vision Transformer) dari Google
 - **🛡️ Anti-Spoofing**: Silent Face Anti-Spoofing (Deep Learning + Traditional Methods)
-- **Dual Backend**: Switch antara YOLOv8 dan MTCNN via environment variable
 - **Real-time Inference**: ~5 FPS untuk detection + classification
 - **Smooth Video**: Render loop terpisah untuk video 30+ FPS
 - **REST API**: Backend Flask dengan endpoint untuk integrasi
@@ -59,7 +58,6 @@ torch>=2.0.0
 torchvision>=0.15.0
 transformers>=4.30.0
 ultralytics>=8.0.0          # YOLOv8 face detection
-facenet-pytorch>=2.5.0      # MTCNN fallback
 onnxruntime>=1.15.0         # Anti-spoofing optimization
 opencv-python>=4.8.0
 Pillow>=10.0.0
@@ -84,11 +82,11 @@ compro/
 ├── yolov8-face.pt              # YOLOv8 face detection model
 ├── access_logs.db              # SQLite database (auto-generated)
 │
-├── api/                        # API Package (Modular)
+├── api/                        # API Package (Modular, YOLOv8-only)
 │   ├── __init__.py
 │   ├── config.py               # Konfigurasi (class names, roles, thresholds)
 │   ├── database.py             # Database operations
-│   ├── model.py                # Face detection & classification (YOLOv8/MTCNN + ViT)
+│   ├── model.py                # Face detection & classification (YOLOv8 + ViT)
 │   ├── antispoof.py            # 🛡️ Silent Face Anti-Spoofing module
 │   └── routes/                 # API Routes
 │       ├── __init__.py
@@ -104,7 +102,6 @@ compro/
 │
 ├── Model build/                # Training notebooks & artifacts
 │   ├── Compro_YOLOv8_Training.ipynb  # YOLOv8 + ViT training notebook
-│   ├── Compro_MTCNN.ipynb            # MTCNN + ViT training notebook
 │   ├── best_vit_yolo.pth             # Model weights (Git LFS)
 │   ├── yolov8-face.pt                # YOLOv8 face detection
 │   ├── model_config.json             # Model configuration
@@ -130,39 +127,19 @@ compro/
 2. Jalankan semua cell secara berurutan
 3. Model akan disimpan di `Model build/best_vit_yolo.pth`
 
-**MTCNN + ViT (Alternative):**
-1. Buka `Model build/Compro_MTCNN.ipynb`
-2. Jalankan semua cell secara berurutan
-
 ### 2. Menjalankan API Server (Recommended)
 
 ```bash
 # Install dependencies
 pip install -r requirements.txt
 
-# Jalankan server (default: YOLOv8 backend)
-python app.py
-
-# Atau dengan MTCNN backend
-set DETECTION_BACKEND=mtcnn
+# Jalankan server
 python app.py
 ```
 
 Server akan berjalan di `http://localhost:5000`
 
-### 3. Switch Detection Backend
-
-```bash
-# Windows - YOLOv8 (default, faster ~5 FPS)
-set DETECTION_BACKEND=yolo
-python app.py
-
-# Windows - MTCNN (more accurate)
-set DETECTION_BACKEND=mtcnn
-python app.py
-```
-
-### 4. Webcam Inference
+### 3. Webcam Inference
 
 #### Option A: Via Web Browser (Recommended)
 1. Jalankan `python app.py`
@@ -192,31 +169,14 @@ python app.py
 
 ## 🔧 Konfigurasi
 
-### Environment Variables
-```bash
-DETECTION_BACKEND=yolo    # 'yolo' atau 'mtcnn'
-```
-
 ### Threshold (api/config.py)
 ```python
 CONFIDENCE_THRESHOLD = 0.5      # Threshold klasifikasi ViT
-FACE_DETECTION_THRESHOLD = 0.35 # Threshold deteksi wajah
+FACE_DETECTION_THRESHOLD = 0.35 # Threshold deteksi wajah (YOLOv8)
 
 # Anti-Spoofing
 ANTISPOOF_ENABLED = True        # Enable/disable anti-spoofing
 ANTISPOOF_THRESHOLD = 0.5       # Min score untuk dianggap real (0.0-1.0)
-```
-
-### YOLOv8 Parameters
-```python
-conf = 0.35                     # Confidence threshold
-imgsz = 480                     # Image size untuk inference
-```
-
-### MTCNN Parameters (fallback)
-```python
-min_face_size = 20              # Ukuran minimum wajah
-thresholds = [0.5, 0.6, 0.6]    # Threshold per stage
 ```
 
 ## 📝 Catatan
@@ -224,7 +184,7 @@ thresholds = [0.5, 0.6, 0.6]    # Threshold per stage
 - Pastikan webcam terhubung dan berfungsi dengan baik
 - Model membutuhkan GPU untuk performa optimal (CUDA)
 - Jika menggunakan CPU, inference akan lebih lambat
-- YOLOv8 lebih cepat (~5 FPS), MTCNN lebih akurat (~2 FPS)
+- YOLOv8 berjalan sekitar ~5 FPS untuk detection + classification
 - Video render tetap smooth (30+ FPS) karena render loop terpisah
 
 ## 🏗️ Arsitektur
@@ -233,9 +193,7 @@ thresholds = [0.5, 0.6, 0.6]    # Threshold per stage
 Input Image/Frame
     ↓
 ┌─────────────────────────────────┐
-│  Detection Backend (selectable) │
-│  ├── YOLOv8-face (default)      │
-│  └── MTCNN (fallback)           │
+│  YOLOv8-face Detector           │
 └─────────────────────────────────┘
     ↓
 Face Cropping + Padding (5%)
@@ -312,13 +270,6 @@ Jika spoof terdeteksi:
   "spoof_reason": "DL: Spoof detected; Texture too smooth"
 }
 ```
-
-## 🔄 Performance Comparison
-
-| Backend | Detection FPS | Accuracy | Notes |
-|---------|--------------|----------|-------|
-| YOLOv8-face | ~5 FPS | Good | Faster, recommended |
-| MTCNN | ~2 FPS | Better | More accurate, slower |
 
 ## 📜 License
 

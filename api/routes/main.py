@@ -19,7 +19,7 @@ def index():
     return jsonify({
         "name": "Face Recognition API",
         "version": "1.0",
-        "description": "Real-time face recognition using MTCNN + ViT",
+        "description": "Real-time face recognition using YOLOv8 + ViT + Anti-Spoofing",
         "endpoints": {
             "/": "API documentation (JSON)",
             "/docs": "API documentation (HTML)",
@@ -153,7 +153,7 @@ def docs():
     <body>
         <div class="container">
             <h1>🎯 Face Recognition API</h1>
-            <p class="subtitle">Real-time face recognition using MTCNN + ViT</p>
+            <p class="subtitle">Real-time face recognition using YOLOv8 + ViT + Silent Face Anti-Spoofing</p>
             
             <div class="quick-links">
                 <a href="/api/webcam" class="quick-link">📹 Open Webcam</a>
