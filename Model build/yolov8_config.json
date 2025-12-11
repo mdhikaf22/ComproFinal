@@ -1,0 +1,30 @@
+{
+  "detector": "YOLOv8-face",
+  "classifier": "ViT-base-patch16-224",
+  "class_names": [
+    "akbar",
+    "aprilianza",
+    "bian",
+    "fadhilah",
+    "falah",
+    "iksan",
+    "imelda",
+    "rifqy",
+    "yolanda"
+  ],
+  "role_mapping": {
+    "iksan": "Aslab",
+    "akbar": "Aslab",
+    "aprilianza": "Aslab",
+    "bian": "Dosen",
+    "fadhilah": "Aslab",
+    "falah": "Aslab",
+    "imelda": "Aslab",
+    "rifqy": "Aslab",
+    "yolanda": "Aslab"
+  },
+  "confidence_threshold": 0.5,
+  "face_detection_threshold": 0.35,
+  "yolo_model_path": "yolov8-face.pt",
+  "vit_model_path": "../best_vit_mtcnn.pth"
+}

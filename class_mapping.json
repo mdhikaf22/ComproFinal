@@ -1,0 +1,25 @@
+{
+  "class_to_idx": {
+    "akbar": 0,
+    "aprilianza": 1,
+    "bian": 2,
+    "fadhilah": 3,
+    "falah": 4,
+    "iksan": 5,
+    "imelda": 6,
+    "rifqy": 7,
+    "yolanda": 8
+  },
+  "idx_to_class": {
+    "0": "akbar",
+    "1": "aprilianza",
+    "2": "bian",
+    "3": "fadhilah",
+    "4": "falah",
+    "5": "iksan",
+    "6": "imelda",
+    "7": "rifqy",
+    "8": "yolanda"
+  },
+  "num_classes": 9
+}

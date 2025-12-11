@@ -1,0 +1,48 @@
+{
+  "model": {
+    "detector": "YOLOv8-face",
+    "classifier": "ViT-base-patch16-224",
+    "yolo_path": "yolov8-face.pt",
+    "vit_path": "best_vit_yolo.pth"
+  },
+  "classes": [
+    "akbar",
+    "aprilianza",
+    "bian",
+    "fadhilah",
+    "falah",
+    "iksan",
+    "imelda",
+    "rifqy",
+    "yolanda"
+  ],
+  "role_mapping": {
+    "iksan": "Aslab",
+    "akbar": "Aslab",
+    "aprilianza": "Aslab",
+    "bian": "Dosen",
+    "fadhilah": "Aslab",
+    "falah": "Aslab",
+    "imelda": "Aslab",
+    "rifqy": "Aslab",
+    "yolanda": "Aslab"
+  },
+  "thresholds": {
+    "confidence": 0.5,
+    "face_detection": 0.35
+  },
+  "training": {
+    "image_size": 224,
+    "batch_size": 16,
+    "num_epochs": 10,
+    "learning_rate": 2e-05,
+    "weight_decay": 0.01,
+    "train_split": 0.8,
+    "random_seed": 42
+  },
+  "results": {
+    "best_val_accuracy": 1.0,
+    "final_train_loss": 0.13607548163050698,
+    "final_val_loss": 0.15814156637147622
+  }
+}
